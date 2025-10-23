@@ -33,6 +33,50 @@ def load_user(user_id):
 def index():
     return render_template('landing.html', plans=app.config['PLANS'])
 
+@app.route('/test-db')
+def test_db():
+    try:
+        # Test database connection
+        db.session.execute('SELECT 1')
+        db.session.commit()
+        
+        # Test table creation
+        db.create_all()
+        
+        # Try to create a test user
+        test_user = User.query.filter_by(email='test@example.com').first()
+        if not test_user:
+            test_user = User(
+                email='test@example.com',
+                username='testuser',
+                password_hash=generate_password_hash('testpassword')
+            )
+            db.session.add(test_user)
+            db.session.commit()
+        
+        return {
+            'status': 'success',
+            'message': 'Database connection successful',
+            'details': {
+                'database_url': str(app.config['SQLALCHEMY_DATABASE_URI']),
+                'tables': [table.name for table in db.get_tables_for_bind()],
+                'test_user': {
+                    'id': test_user.id,
+                    'email': test_user.email,
+                    'username': test_user.username
+                }
+            }
+        }
+    except Exception as e:
+        return {
+            'status': 'error',
+            'message': str(e),
+            'error_type': type(e).__name__,
+            'details': {
+                'database_url': str(app.config['SQLALCHEMY_DATABASE_URI'])
+            }
+        }, 500
+
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     if request.method == 'POST':
