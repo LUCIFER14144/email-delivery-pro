@@ -121,10 +121,15 @@ def internal_error(e):
     db.session.rollback()
     return render_template('500.html'), 500
 
+def init_app():
+    with app.app_context():
+        init_db()
+    return app
+
 if __name__ == '__main__':
-    init_db()
+    init_app()
     app.run(debug=True, host='127.0.0.1', port=5001)
 
 # Vercel serverless function handler
 def handler(request, context):
-    return app
+    return init_app()
