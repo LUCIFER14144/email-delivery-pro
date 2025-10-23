@@ -16,6 +16,10 @@ config_name = os.getenv('FLASK_CONFIG') or 'development'
 app.config.from_object(config[config_name])
 app.secret_key = app.config.get('SECRET_KEY') or 'a_super_secret_key'
 
+# Set database URL
+if os.environ.get('POSTGRES_URL'):
+    app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{os.environ.get('POSTGRES_USER')}:{os.environ.get('POSTGRES_PASSWORD')}@{os.environ.get('POSTGRES_HOST')}/{os.environ.get('POSTGRES_DATABASE')}"
+
 db.init_app(app)
 login_manager = LoginManager()
 login_manager.init_app(app)
