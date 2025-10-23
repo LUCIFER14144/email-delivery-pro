@@ -1,0 +1,225 @@
+# 14. Create static/css/style.css
+css_content = '''/* Custom CSS for Email Deliverability Pro */
+
+:root {
+    --primary-color: #0d6efd;
+    --success-color: #198754;
+    --warning-color: #ffc107;
+    --danger-color: #dc3545;
+    --info-color: #0dcaf0;
+    --light-color: #f8f9fa;
+    --dark-color: #212529;
+    --gradient-primary: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    --shadow-soft: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+    --shadow-medium: 0 0.5rem 1rem rgba(0, 0, 0, 0.15);
+}
+
+/* Global Styles */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f8f9fa;
+}
+
+/* Navigation */
+.navbar-brand {
+    font-weight: 600;
+    font-size: 1.25rem;
+}
+
+/* Hero Section */
+.hero-section {
+    background: var(--gradient-primary);
+    min-height: 70vh;
+    display: flex;
+    align-items: center;
+}
+
+.bg-gradient-primary {
+    background: var(--gradient-primary) !important;
+}
+
+.hero-dashboard img {
+    border: 3px solid rgba(255, 255, 255, 0.2);
+    border-radius: 10px;
+}
+
+/* Feature Cards */
+.feature-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border: none;
+    height: 100%;
+}
+
+.feature-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-medium);
+}
+
+.feature-icon {
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+/* Pricing Cards */
+.pricing-card {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    border-radius: 10px;
+    overflow: hidden;
+}
+
+.pricing-card:hover {
+    transform: translateY(-5px);
+    box-shadow: var(--shadow-medium);
+}
+
+.pricing-card.border-primary {
+    border: 2px solid var(--primary-color) !important;
+}
+
+.pricing-amount {
+    line-height: 1;
+}
+
+/* Dashboard Cards */
+.card {
+    border: none;
+    border-radius: 10px;
+    box-shadow: var(--shadow-soft);
+    transition: box-shadow 0.3s ease;
+}
+
+.card:hover {
+    box-shadow: var(--shadow-medium);
+}
+
+.card-header {
+    background-color: white;
+    border-bottom: 1px solid #eee;
+    font-weight: 600;
+}
+
+/* Stats Cards */
+.bg-primary.text-white .opacity-75 {
+    opacity: 0.75 !important;
+}
+
+/* Tables */
+.table {
+    margin-bottom: 0;
+}
+
+.table th {
+    border-top: none;
+    font-weight: 600;
+    background-color: #f8f9fa;
+    color: var(--dark-color);
+    border-bottom: 2px solid #dee2e6;
+}
+
+.table-hover tbody tr:hover {
+    background-color: rgba(13, 110, 253, 0.05);
+}
+
+/* Badges */
+.badge {
+    font-size: 0.75em;
+    font-weight: 600;
+}
+
+/* Form Styles */
+.form-control {
+    border-radius: 8px;
+    border: 1.5px solid #e0e0e0;
+    padding: 0.75rem 1rem;
+    transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.form-control:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.15);
+}
+
+.form-label {
+    font-weight: 600;
+    color: var(--dark-color);
+    margin-bottom: 0.5rem;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    transition: all 0.3s ease;
+}
+
+.btn-lg {
+    padding: 1rem 2rem;
+    font-size: 1.1rem;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+    .hero-section {
+        min-height: 50vh;
+        padding: 2rem 0;
+    }
+    
+    .display-4 {
+        font-size: 2rem;
+    }
+    
+    .pricing-card {
+        margin-bottom: 1.5rem;
+    }
+    
+    .container-fluid {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+}
+
+/* Loading States */
+.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.spinner-border-sm {
+    width: 1rem;
+    height: 1rem;
+}
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+'''
+
+with open(f"{project_name}/static/css/style.css", 'w') as f:
+    f.write(css_content)
+
+print("✅ static/css/style.css created")

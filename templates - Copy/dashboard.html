@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-5">
+    <h1 class="mb-4">Welcome, {{ current_user.company_name or current_user.email }}</h1>
+    
+    <div class="row mb-4">
+        <div class="col-md-4">
+            <div class="card p-3 text-center bg-primary text-white">
+                <h5>Total Email Tests</h5>
+                <h2>{{ total_tests }}</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3 text-center bg-success text-white">
+                <h5>Average Delivery Rate</h5>
+                <h2>{{ avg_delivery_rate }}%</h2>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card p-3 text-center bg-warning text-dark">
+                <h5>Average Spam Score</h5>
+                <h2>{{ avg_spam_score }}</h2>
+            </div>
+        </div>
+    </div>
+
+    <h3>Recent Tests</h3>
+    {% if recent_tests %}
+    <div class="list-group mb-4">
+        {% for test in recent_tests %}
+            <div class="list-group-item">
+                <strong>{{ test.subject }}</strong> from {{ test.sender_email }} <br />
+                Score: {{ test.overall_score }} &nbsp; Delivery: {{ test.delivery_rate }}% <br />
+                Date: {{ test.created_at.strftime('%Y-%m-%d') }}
+            </div>
+        {% endfor %}
+    </div>
+    {% else %}
+    <p>No tests found yet. Run your first email test!</p>
+    {% endif %}
+
+    <h3>Domains</h3>
+    {% if domains %}
+    <ul class="list-group">
+        {% for domain in domains %}
+        <li class="list-group-item">{{ domain.domain_name }} - Score: {{ domain.reputation_score }}</li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <p>No domains monitored yet.</p>
+    {% endif %}
+</div>
+{% endblock %}

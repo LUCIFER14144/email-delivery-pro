@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col">
+            <h1 class="h3 mb-0">
+                <i class="fas fa-chart-line"></i> Dashboard
+            </h1>
+            <p class="text-muted">Welcome back, {{ current_user.company_name or current_user.email }}!</p>
+        </div>
+        <div class="col-auto">
+            <div class="btn-group">
+                <a href="{{ url_for('spam_checker_route') }}" class="btn btn-primary">
+                    <i class="fas fa-plus"></i> New Test
+                </a>
+                <a href="{{ url_for('inbox_test') }}" class="btn btn-outline-primary">
+                    <i class="fas fa-inbox"></i> Inbox Test
+                </a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-primary text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-1">Total Tests</h5>
+                            <h2 class="mb-0">{{ total_tests }}</h2>
+                            <small>All time</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-flask fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-success text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-1">Avg Delivery Rate</h5>
+                            <h2 class="mb-0">{{ avg_delivery_rate }}%</h2>
+                            <small>
+                                {% if avg_delivery_rate >= 90 %}
+                                <i class="fas fa-arrow-up"></i> Excellent
+                                {% elif avg_delivery_rate >= 75 %}
+                                <i class="fas fa-arrow-right"></i> Good
+                                {% else %}
+                                <i class="fas fa-arrow-down"></i> Needs work
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-inbox fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-warning text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-1">Avg Spam Score</h5>
+                            <h2 class="mb-0">{{ avg_spam_score }}</h2>
+                            <small>
+                                {% if avg_spam_score <= 20 %}
+                                <i class="fas fa-check"></i> Low risk
+                                {% elif avg_spam_score <= 50 %}
+                                <i class="fas fa-exclamation"></i> Medium risk  
+                                {% else %}
+                                <i class="fas fa-times"></i> High risk
+                                {% endif %}
+                            </small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-shield-alt fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card bg-info text-white">
+                <div class="card-body">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="card-title mb-1">Tests Remaining</h5>
+                            <h2 class="mb-0">{{ tests_remaining }}</h2>
+                            <small>This month ({{ current_user.plan }} plan)</small>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar fa-2x opacity-75"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Recent Tests -->
+        <div class="col-lg-8 mb-4">
+            <div class="card">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">Recent Email Tests</h5>
+                    <a href="{{ url_for('reports') }}" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+                <div class="card-body">
+                    {% if recent_tests %}
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>Subject</th>
+                                    <th>Score</th>
+                                    <th>Delivery Rate</th>
+                                    <th>Date</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for test in recent_tests %}
+                                <tr>
+                                    <td>
+                                        <div class="fw-medium">{{ test.subject[:50] }}{% if test.subject|length > 50 %}...{% endif %}</div>
+                                        <small class="text-muted">{{ test.sender_email }}</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-{% if test.overall_score >= 80 %}success{% elif test.overall_score >= 60 %}warning{% else %}danger{% endif %}">
+                                            {{ test.overall_score }}
+                                        </span>
+                                    </td>
+                                    <td>{{ test.delivery_rate }}%</td>
+                                    <td>{{ test.created_at.strftime('%m/%d/%Y') }}</td>
+                                    <td>
+                                        {% set status_badge = test.get_status_badge() %}
+                                        <span class="badge bg-{{ status_badge.class }}">{{ status_badge.text }}</span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    {% else %}
+                    <div class="text-center py-5">
+                        <i class="fas fa-flask fa-3x text-muted mb-3"></i>
+                        <h5 class="text-muted">No tests yet</h5>
+                        <p class="text-muted">Run your first email deliverability test to see results here.</p>
+                        <a href="{{ url_for('spam_checker_route') }}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> Create Your First Test
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="mb-0">Quick Actions</h5>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a href="{{ url_for('spam_checker_route') }}" class="btn btn-outline-primary">
+                            <i class="fas fa-shield-alt"></i> Check Spam Score
+                        </a>
+                        <a href="{{ url_for('inbox_test') }}" class="btn btn-outline-success">
+                            <i class="fas fa-inbox"></i> Test Inbox Placement
+                        </a>
+                        <a href="{{ url_for('reports') }}" class="btn btn-outline-info">
+                            <i class="fas fa-chart-bar"></i> View Reports
+                        </a>
+                        <a href="{{ url_for('settings') }}" class="btn btn-outline-secondary">
+                            <i class="fas fa-cog"></i> Account Settings
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Plan Info -->
+            <div class="card mt-4">
+                <div class="card-body text-center">
+                    <h6 class="text-muted">Current Plan</h6>
+                    <h4 class="text-primary">{{ current_user.plan.title() }}</h4>
+                    <p class="mb-3">
+                        <strong>{{ tests_this_month }}</strong> / 
+                        {% if plan_limits.max_tests_per_month == -1 %}∞{% else %}{{ plan_limits.max_tests_per_month }}{% endif %}
+                        tests used this month
+                    </p>
+                    {% if current_user.plan == 'starter' %}
+                    <a href="#" class="btn btn-sm btn-primary">Upgrade Plan</a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
