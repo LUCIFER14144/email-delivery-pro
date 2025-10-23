@@ -17,8 +17,15 @@ app.config.from_object(config[config_name])
 app.secret_key = app.config.get('SECRET_KEY') or 'a_super_secret_key'
 
 # Set database URL
-if os.environ.get('POSTGRES_URL'):
-    app.config['SQLALCHEMY_DATABASE_URI'] = f"postgresql://{os.environ.get('POSTGRES_USER')}:{os.environ.get('POSTGRES_PASSWORD')}@{os.environ.get('POSTGRES_HOST')}/{os.environ.get('POSTGRES_DATABASE')}"
+try:
+    if os.environ.get('POSTGRES_URL'):
+        db_url = f"postgresql://{os.environ.get('POSTGRES_USER')}:{os.environ.get('POSTGRES_PASSWORD')}@{os.environ.get('POSTGRES_HOST')}/{os.environ.get('POSTGRES_DATABASE')}"
+        app.config['SQLALCHEMY_DATABASE_URI'] = db_url
+        print(f"Database URL configured: {db_url.replace(os.environ.get('POSTGRES_PASSWORD'), '****')}")
+    else:
+        print("No Postgres URL found, using default configuration")
+except Exception as e:
+    print(f"Error configuring database: {str(e)}")
 
 db.init_app(app)
 login_manager = LoginManager()
@@ -41,45 +48,51 @@ def index():
 def test_db():
     try:
         # Test database connection
-        db.session.execute('SELECT 1')
+        result = db.session.execute('SELECT version()').scalar()
         db.session.commit()
         
-        # Test table creation
-        db.create_all()
+        # Get table information
+        inspector = db.inspect(db.engine)
+        tables = inspector.get_table_names()
         
-        # Try to create a test user
-        test_user = User.query.filter_by(email='test@example.com').first()
-        if not test_user:
-            test_user = User(
-                email='test@example.com',
-                username='testuser',
-                password_hash=generate_password_hash('testpassword')
-            )
-            db.session.add(test_user)
-            db.session.commit()
+        # Environment information
+        env_info = {
+            'FLASK_ENV': os.environ.get('FLASK_ENV'),
+            'POSTGRES_HOST': os.environ.get('POSTGRES_HOST'),
+            'POSTGRES_DATABASE': os.environ.get('POSTGRES_DATABASE'),
+            'POSTGRES_USER': os.environ.get('POSTGRES_USER'),
+            'DATABASE_URL': app.config.get('SQLALCHEMY_DATABASE_URI', '').split('@')[-1]  # Safe display
+        }
         
         return {
             'status': 'success',
             'message': 'Database connection successful',
             'details': {
-                'database_url': str(app.config['SQLALCHEMY_DATABASE_URI']),
-                'tables': [table.name for table in db.get_tables_for_bind()],
-                'test_user': {
-                    'id': test_user.id,
-                    'email': test_user.email,
-                    'username': test_user.username
+                'postgres_version': result,
+                'tables': tables,
+                'environment': env_info,
+                'app_config': {
+                    'debug': app.debug,
+                    'env': app.env,
+                    'testing': app.testing
                 }
             }
         }
     except Exception as e:
-        return {
+        error_info = {
             'status': 'error',
             'message': str(e),
             'error_type': type(e).__name__,
             'details': {
-                'database_url': str(app.config['SQLALCHEMY_DATABASE_URI'])
+                'error_args': getattr(e, 'args', []),
+                'environment': {
+                    'FLASK_ENV': os.environ.get('FLASK_ENV'),
+                    'DATABASE_URL': app.config.get('SQLALCHEMY_DATABASE_URI', '').split('@')[-1]
+                }
             }
-        }, 500
+        }
+        print(f"Database test error: {error_info}")  # Log the error
+        return error_info, 500
 
 @app.route('/login', methods=['GET', 'POST'])
 def login():
@@ -171,9 +184,16 @@ def internal_error(e):
     return render_template('500.html'), 500
 
 def init_app():
-    with app.app_context():
-        init_db()
-    return app
+    try:
+        with app.app_context():
+            # Check if tables exist first
+            inspector = db.inspect(db.engine)
+            if not inspector.get_table_names():
+                db.create_all()
+        return app
+    except Exception as e:
+        print(f"Error initializing app: {str(e)}")
+        return app
 
 if __name__ == '__main__':
     init_app()
@@ -181,4 +201,8 @@ if __name__ == '__main__':
 
 # Vercel serverless function handler
 def handler(request, context):
-    return init_app()
+    try:
+        return app
+    except Exception as e:
+        print(f"Handler error: {str(e)}")
+        return app
