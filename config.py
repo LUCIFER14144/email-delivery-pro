@@ -6,7 +6,13 @@ class Config:
     SECRET_KEY = 'some_random_secret_change_in_prod'
 
     # Database Settings
-    SQLALCHEMY_DATABASE_URI = os.environ.get('DATABASE_URL') or 'sqlite:///deliverability.db'
+    @property
+    def SQLALCHEMY_DATABASE_URI(self):
+        if os.environ.get('POSTGRES_URL'):
+            # Vercel Postgres connection
+            return f"postgresql://{os.environ.get('POSTGRES_USER')}:{os.environ.get('POSTGRES_PASSWORD')}@{os.environ.get('POSTGRES_HOST')}/{os.environ.get('POSTGRES_DATABASE')}"
+        return os.environ.get('DATABASE_URL') or 'sqlite:///deliverability.db'
+    
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Email Testing APIs (Add your own keys)

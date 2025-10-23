@@ -105,6 +105,7 @@ def inbox_test_page():
 
 def init_db():
     with app.app_context():
+        db.create_all()  # This will create all tables
         db.create_all()
         if User.query.count() == 0:
             demo = User(email='demo@example.com', company_name='Demo Company', plan='professional')
